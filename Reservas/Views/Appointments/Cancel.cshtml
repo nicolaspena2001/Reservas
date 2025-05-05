@@ -1,0 +1,37 @@
+﻿@model Reservas.Models.Appointment
+@using Reservas.Helpers
+
+@{
+    ViewData["Title"] = "Cancelar Cita Médica";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<h4>¿Estás seguro de que deseas cancelar esta cita?</h4>
+<hr />
+
+<dl class="row">
+    <dt class="col-sm-3">Paciente</dt>
+    <dd class="col-sm-9">@Model.Patient.FirstName @Model.Patient.LastName</dd>
+
+    <dt class="col-sm-3">Médico</dt>
+    <dd class="col-sm-9">@Model.Doctor.Name</dd>
+
+    <dt class="col-sm-3">Fecha</dt>
+    <dd class="col-sm-9">@Model.AppointmentDate.ToString("yyyy-MM-dd")</dd>
+
+    <dt class="col-sm-3">Hora</dt>
+    <dd class="col-sm-9">@Model.AppointmentDate.ToString("HH:mm")</dd>
+
+    <dt class="col-sm-3">Motivo</dt>
+    <dd class="col-sm-9">@Model.Reason</dd>
+
+    <dt class="col-sm-3">Estado</dt>
+    <dd class="col-sm-9">@Model.Status.GetDisplayName()</dd>
+</dl>
+
+<form asp-action="CancelConfirmed" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Sí, cancelar cita</button>
+    <a asp-action="Index" class="btn btn-secondary">No, volver</a>
+</form>

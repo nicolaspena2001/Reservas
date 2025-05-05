@@ -1,0 +1,48 @@
+﻿@model IEnumerable<Reservas.Models.Appointment>
+@using Reservas.Helpers
+
+@{
+    ViewData["Title"] = "Historial de Citas Médicas";
+}
+
+<h1>@ViewData["Title"]</h1>
+<hr />
+
+<a asp-action="Create" class="btn btn-success mb-3">🗓️ Agendar Nueva Cita</a>
+
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+    <tr>
+        <th>Paciente</th>
+        <th>Médico</th>
+        <th>Fecha</th>
+        <th>Hora</th>
+        <th>Motivo</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var cita in Model)
+    {
+        var filaCancelada = cita.Status == Reservas.Models.Constants.AppointmentStatus.Cancelled ? "table-secondary text-muted" : "";
+
+        <tr class="@filaCancelada">
+            <td>@cita.Patient.FirstName @cita.Patient.LastName</td>
+            <td>@cita.Doctor.Name</td>
+            <td>@cita.AppointmentDate.ToString("yyyy-MM-dd")</td>
+            <td>@cita.AppointmentDate.ToString("HH:mm")</td>
+            <td>@cita.Reason</td>
+            <td>@cita.Status.GetDisplayName()</td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@cita.Id" class="btn btn-sm btn-primary">Editar</a>
+
+                @if (cita.Status != Reservas.Models.Constants.AppointmentStatus.Cancelled)
+                {
+                    <a asp-action="Cancel" asp-route-id="@cita.Id" class="btn btn-sm btn-danger">Cancelar</a>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

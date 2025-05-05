@@ -1,0 +1,104 @@
+﻿@model Reservas.Models.Appointment
+@using Reservas.Helpers
+@{
+    ViewData["Title"] = "Agendar Cita Médica";
+    var doctors = ViewData["Doctors"] as List<Reservas.Models.Doctor>;
+    var patients = ViewData["Patients"] as List<Reservas.Models.Patient>;
+}
+
+<h1>@ViewData["Title"]</h1>
+<hr/>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <strong>Corrige los siguientes errores:</strong>
+        <ul>
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="PatientId" class="control-label">Paciente</label>
+        <select asp-for="PatientId" class="form-control" asp-items="@(new SelectList(patients, "Id", "FirstName"))">
+            <option value="">Seleccione un paciente</option>
+        </select>
+        <span asp-validation-for="PatientId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="DoctorId" class="control-label">Médico</label>
+        <select asp-for="DoctorId" class="form-control" asp-items="@(new SelectList(doctors, "Id", "Name"))" id="doctorSelect">
+            <option value="">Seleccione un médico</option>
+        </select>
+        <span asp-validation-for="DoctorId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label for="AppointmentDate">Fecha</label>
+        <input type="date" id="dateInput" class="form-control" name="appointmentDateRaw"
+               min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+    </div>
+
+    <div class="form-group">
+        <label for="timeSelect">Hora</label>
+        <select id="timeSelect" name="AppointmentDate" class="form-control">
+            <option value="">Seleccione una hora</option>
+        </select>
+        <span asp-validation-for="AppointmentDate" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Reason" class="control-label">Motivo</label>
+        <input asp-for="Reason" class="form-control" />
+        <span asp-validation-for="Reason" class="text-danger"></span>
+    </div>
+
+    <br/>
+    <div class="form-group">
+        <input type="submit" value="Agendar" class="btn btn-success" />
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        const doctorSelect = document.getElementById("doctorSelect");
+        const dateInput = document.getElementById("dateInput");
+        const timeSelect = document.getElementById("timeSelect");
+
+        async function cargarHorarios() {
+            const doctorId = doctorSelect.value;
+            const date = dateInput.value;
+
+            if (!doctorId || !date) return;
+
+            console.log(`Solicitando horarios para Doctor ${doctorId} y Fecha ${date}`);
+
+            try {
+                const response = await fetch(`/Appointments/GetAvailableHours?doctorId=${doctorId}&date=${date}`);
+                if (!response.ok) throw new Error("Error al obtener horarios");
+
+                const horarios = await response.json();
+                console.log("Horarios recibidos:", horarios);
+
+                timeSelect.innerHTML = '<option value="">Seleccione una hora</option>';
+
+                horarios.forEach(h => {
+                    const fullDate = `${date}T${h}:00`;
+                    timeSelect.innerHTML += `<option value="${fullDate}">${h}</option>`;
+                });
+            } catch (error) {
+                console.error("Error cargando horarios:", error);
+            }
+        }
+
+        doctorSelect.addEventListener("change", cargarHorarios);
+        dateInput.addEventListener("change", cargarHorarios);
+    </script>
+}

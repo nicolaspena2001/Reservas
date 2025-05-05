@@ -1,0 +1,40 @@
+﻿@model IEnumerable<Reservas.Models.Doctor>
+
+@{
+    ViewData["Title"] = "Lista de Médicos";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Registrar nuevo médico</a>
+</p>
+
+<table class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <th>Nombre</th>
+        <th>Especialidad</th>
+        <th>Email</th>
+        <th>Teléfono</th>
+        <th>Consultorio</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var doctor in Model)
+    {
+        <tr>
+            <td>@doctor.Name</td>
+            <td>@doctor.Specialty</td>
+            <td>@doctor.Email</td>
+            <td>@doctor.Phone</td>
+            <td>@doctor.Office</td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@doctor.Id" class="btn btn-sm btn-warning">Editar</a>
+                <a asp-action="Delete" asp-route-id="@doctor.Id" class="btn btn-sm btn-danger">Eliminar</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
