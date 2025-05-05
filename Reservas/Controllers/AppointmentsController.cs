@@ -14,13 +14,26 @@ namespace Reservas.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? doctorId, int? patientId, int? status)
         {
-            var appointments = await _context.Appointments
+            IQueryable<Appointment> query = _context.Appointments
                 .Include(a => a.Doctor)
                 .Include(a => a.Patient)
-                .OrderBy(a => a.AppointmentDate)
-                .ToListAsync();
+                .AsQueryable();
+
+            if (doctorId.HasValue)
+                query = query.Where(a => a.DoctorId == doctorId.Value);
+
+            if (patientId.HasValue)
+                query = query.Where(a => a.PatientId == patientId.Value);
+
+            if (status.HasValue)
+                query = query.Where(a => (int)a.Status == status.Value);
+
+            var appointments = await query.OrderBy(a => a.AppointmentDate).ToListAsync();
+
+            ViewBag.Doctors = _context.Doctors.ToList();
+            ViewBag.Patients = _context.Patients.ToList();
 
             return View(appointments);
         }
@@ -156,5 +169,32 @@ namespace Reservas.Controllers
 
             return Json(disponibles);
         }
+        
+        public async Task<IActionResult> Complete(int id)
+        {
+            var appointment = await _context.Appointments
+                .Include(a => a.Doctor)
+                .Include(a => a.Patient)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (appointment == null) return NotFound();
+
+            return View(appointment);
+        }
+
+        
+        [HttpPost, ActionName("CompleteConfirmed")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CompleteConfirmed(int id)
+        {
+            var appointment = await _context.Appointments.FindAsync(id);
+            if (appointment == null) return NotFound();
+
+            appointment.Status = Constants.AppointmentStatus.Completed;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
     }
 }
